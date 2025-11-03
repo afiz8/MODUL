@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Latihan 4 - Modif</title>
+</head>
+<body bgcolor="black" text="lime">
+  <script>
+    // Memperbaiki dan memodifikasi variabel
+    var greetingString = prompt("Masukkan kata sapaan favorit kamu (contoh: Halo, Hai, Hello):", "Hello");
+    var myName = prompt("Siapa nama kamu?", "");
+    var hobby = prompt("Apa hobi kamu?", "Coding");
+    var dream = prompt("Cita-cita kamu apa?", "Programmer handal");
+    var mood = prompt("Lagi mood apa hari ini?", "Semangat");
+
+    // Gabungkan semua hasil input
+    var concatString = greetingString + " " + myName + "!<br>" +
+      "Hobimu: " + hobby + "<br>" +
+      "Cita-citamu: " + dream + "<br>" +
+      "Mood kamu hari ini: " + mood + "<br>";
+
+    // Tampilkan ke halaman
+    document.write("<h2>" + greetingString + " " + myName + "!</h2>");
+    document.write("<hr>");
+    document.write(concatString);
+    document.write("<b>Terus semangat ya, " + myName + "!</b>");
+  </script>
+</body>
+</html>
