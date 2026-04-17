@@ -2,98 +2,186 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Modul Interaktif</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Absensi UNPAM</title>
 
 <style>
-body {
+body{
     font-family: Arial;
-    background: linear-gradient(135deg,#667eea,#764ba2);
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    text-align:center;
+    background:#f4f4f4;
+}
+.container{
+    background:white;
+    padding:20px;
+    margin:30px auto;
+    width:350px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+.hidden{ display:none; }
+
+table{
+    margin:auto;
+    border-collapse: collapse;
+    width:90%;
+}
+td,th{
+    border:1px solid black;
+    padding:8px;
 }
 
-.container {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    width: 350px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+.unpam-logo{ font-size:48px; }
+
+input{
+    margin:5px;
+    padding:8px;
+    width:80%;
 }
-
-h2 { text-align: center; }
-
-input {
-    width: 100%;
-    padding: 10px;
-    margin: 6px 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-}
-
-button {
-    width: 100%;
-    padding: 10px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #5a67d8;
-}
-
-.result {
-    margin-top: 15px;
-    padding: 10px;
-    background: #f4f4f4;
-    border-radius: 6px;
+button{
+    padding:8px 15px;
+    margin:5px;
+    cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-    <h2>Modul Interaktif</h2>
+<div class="container" id="auth">
+    <div class="unpam-logo">🏛️</div>
+    <h2>UNIVERSITAS PAMULANG</h2>
 
-    <input type="text" id="nama" placeholder="Nama kamu">
-    <input type="text" id="hobi" placeholder="Hobi kamu">
-    <input type="text" id="cita" placeholder="Cita-cita">
-    <input type="text" id="mood" placeholder="Mood hari ini">
+    <h3>Login</h3>
+    <input id="username" placeholder="Username"><br>
+    <input id="password" type="password" placeholder="Password"><br>
+    <button onclick="login()">Login</button>
+    <p id="msg"></p>
 
-    <button onclick="tampilkan()">Tampilkan</button>
+    <hr>
 
-    <div class="result" id="output"></div>
+    <h3>Register</h3>
+    <input id="reg_user" placeholder="Username"><br>
+    <input id="reg_pass" type="password" placeholder="Password"><br>
+    <button onclick="register()">Register</button>
+</div>
+
+<div class="container hidden" id="app">
+    <div class="unpam-logo">🏛️</div>
+    <h2 id="welcome"></h2>
+    <h3 id="jam"></h3>
+
+    <input id="nama" placeholder="Nama">
+    <button onclick="tambah()">Tambah Absen</button>
+    <button onclick="logout()">Logout</button>
+
+    <br><br>
+
+    <input id="search" placeholder="Cari nama..." onkeyup="loadData()">
+
+    <br><br>
+
+    <table id="tabel"></table>
 </div>
 
 <script>
-function tampilkan() {
-    let nama = document.getElementById("nama").value;
-    let hobi = document.getElementById("hobi").value;
-    let cita = document.getElementById("cita").value;
-    let mood = document.getElementById("mood").value;
 
-    if(nama === "" || hobi === "" || cita === "" || mood === "") {
-        alert("Isi semua data!");
-        return;
-    }
+// STORAGE
+function getUsers(){ return JSON.parse(localStorage.getItem("users")||"[]"); }
+function setUsers(data){ localStorage.setItem("users",JSON.stringify(data)); }
 
-    let hasil = `
-        <h3>Halo, ${nama} 👋</h3>
-        <p><b>Hobi:</b> ${hobi}</p>
-        <p><b>Cita-cita:</b> ${cita}</p>
-        <p><b>Mood hari ini:</b> ${mood}</p>
-        <hr>
-        <b>Terus semangat ya! 💪</b>
-    `;
+function getAbsen(){ return JSON.parse(localStorage.getItem("absen")||"[]"); }
+function setAbsen(data){ localStorage.setItem("absen",JSON.stringify(data)); }
 
-    document.getElementById("output").innerHTML = hasil;
+// SESSION
+function setSession(u){ localStorage.setItem("session",u); }
+function getSession(){ return localStorage.getItem("session"); }
+function logout(){ localStorage.removeItem("session"); location.reload(); }
+
+// JAM
+setInterval(()=>{
+    document.getElementById("jam").innerText =
+    "Jam: " + new Date().toLocaleTimeString();
+},1000);
+
+// REGISTER
+function register(){
+    let u = document.getElementById("reg_user").value.trim();
+    let p = document.getElementById("reg_pass").value.trim();
+
+    if(!u || !p) return alert("Isi semua!");
+
+    let users = getUsers();
+    if(users.find(x=>x.username===u)) return alert("User sudah ada!");
+
+    users.push({username:u,password:p});
+    setUsers(users);
+
+    alert("Register berhasil!");
 }
+
+// LOGIN
+function login(){
+    let u = document.getElementById("username").value.trim();
+    let p = document.getElementById("password").value.trim();
+
+    let users = getUsers();
+    let found = users.find(x=>x.username===u && x.password===p);
+
+    if(found){
+        setSession(u);
+        showApp();
+    }else{
+        document.getElementById("msg").innerText = "Login gagal!";
+    }
+}
+
+// TAMPIL APP
+function showApp(){
+    document.getElementById("auth").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+
+    document.getElementById("welcome").innerText =
+        "Welcome " + getSession();
+
+    loadData();
+}
+
+// TAMBAH
+function tambah(){
+    let n = document.getElementById("nama").value.trim();
+    if(!n) return alert("Isi nama!");
+
+    let data = getAbsen();
+    data.push({nama:n,waktu:new Date().toLocaleString()});
+
+    setAbsen(data);
+    document.getElementById("nama").value="";
+    loadData();
+}
+
+// LOAD
+function loadData(){
+    let data = getAbsen();
+    let search = document.getElementById("search").value.toLowerCase();
+
+    let html = "<tr><th>No</th><th>Nama</th><th>Waktu</th></tr>";
+
+    data.filter(x=>x.nama.toLowerCase().includes(search))
+    .forEach((x,i)=>{
+        html+=`
+        <tr>
+            <td>${i+1}</td>
+            <td>${x.nama}</td>
+            <td>${x.waktu}</td>
+        </tr>`;
+    });
+
+    document.getElementById("tabel").innerHTML = html;
+}
+
+// AUTO LOGIN
+if(getSession()) showApp();
+
 </script>
 
 </body>
